@@ -1,8 +1,8 @@
 options:
-#  string-option:
-#    type: string
-#    default: "Default Value"
-#    description: "A short description of the configuration option"
+  string-option:
+    type: string
+    default: "Default Value"
+    description: "A short description of the configuration option"
 #  boolean-option:
 #    type: boolean
 #    default: False

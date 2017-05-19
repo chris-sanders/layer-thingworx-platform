@@ -13,7 +13,9 @@ subordinate: true
 #provides:
 #  provides-relation:
 #    interface: interface-name
-#requires:
+requires:
+  tomcat-server:
+    scope: container
 #  requires-relation:
 #    interface: interface-name
 #peers:
