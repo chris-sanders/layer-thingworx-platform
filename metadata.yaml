@@ -1,0 +1,21 @@
+name: thingworx-platform
+summary: Install Thingworx developer platform
+maintainer: Chris Sanders <sanders.chris@gmail.com>
+description: |
+  Install Thingworx developer platform on Ubuntu
+tags:
+  # Replace "misc" with one or more whitelisted tags from this list:
+  # https://jujucharms.com/docs/stable/authors-charm-metadata
+  - misc
+subordinate: true
+#series:
+#  - xenial
+#provides:
+#  provides-relation:
+#    interface: interface-name
+#requires:
+#  requires-relation:
+#    interface: interface-name
+#peers:
+#  peer-relation:
+#    interface: interface-name
