@@ -11,13 +11,12 @@ subordinate: true
 #series:
 #  - xenial
 #provides:
-#  provides-relation:
+#  provides-services:
 #    interface: interface-name
 requires:
-  tomcat-server:
+  juju-info:
+    interface: juju-info
     scope: container
-#  requires-relation:
-#    interface: interface-name
 #peers:
 #  peer-relation:
 #    interface: interface-name
