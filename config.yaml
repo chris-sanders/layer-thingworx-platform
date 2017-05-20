@@ -3,6 +3,10 @@ options:
     type: string
     default: "Default Value"
     description: "A short description of the configuration option"
+  install-admin:
+    type: boolean
+    default: True
+    description: "Include the tomcat8-admin package for administration"
 #  boolean-option:
 #    type: boolean
 #    default: False

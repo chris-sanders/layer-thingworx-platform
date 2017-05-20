@@ -8,8 +8,14 @@ tags:
   # https://jujucharms.com/docs/stable/authors-charm-metadata
   - misc
 subordinate: true
-#series:
-#  - xenial
+series:
+  - xenial
+  - trusty
+resources:
+  foundation-server:
+    type: file
+    filename: thingworx-platform.zip
+    description: "Developer platoform zip file"
 #provides:
 #  provides-services:
 #    interface: interface-name
