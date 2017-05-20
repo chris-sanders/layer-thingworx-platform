@@ -1,8 +1,12 @@
 options:
-  string-option:
+  tomcat-user:
     type: string
-    default: "Default Value"
-    description: "A short description of the configuration option"
+    default: "tomcat8"
+    description: "The user added to tomcat"
+  tomcat-passwd:
+    type: string
+    default: "tomcat8"
+    description: "The tomcat user password"
   install-admin:
     type: boolean
     default: True

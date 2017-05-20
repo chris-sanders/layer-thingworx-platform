@@ -1,4 +1,5 @@
 from charms.reactive import when, when_not, set_state
+from charmhelpers.core import hookenv
 from charmhelpers.core.hookenv import status_set, resource_get, log
 from charmhelpers.fetch import apt_install
 from charmhelpers.core.host import service_start, service_restart, chownr
@@ -33,11 +34,11 @@ def configure_tomcat():
             if line.startswith('<user username="{}"'.format(config['tomcat-user'])):
                 continue
             # Add ueser at end of users section
-            if line.startswith("</tomcat-users>")
+            if line.startswith("</tomcat-users>"):
                 if config['install-admin']:
-                    print('<user username="{}" password="{}" roles="manager,manager-gui"/>\n'.format(config['tomcat-user'],config['tomcat-passwd'),end='')
+                    print('<user username="{}" password="{}" roles="manager,manager-gui"/>\n'.format(config['tomcat-user'],config['tomcat-passwd']),end='')
                 else:
-                    print('<user username="{}" password="{}" roles="manager"/>\n'.format(config['tomcat-user'],config['tomcat-passwd'),end='')
+                    print('<user username="{}" password="{}" roles="manager"/>\n'.format(config['tomcat-user'],config['tomcat-passwd']),end='')
             print(line,end='')
     # Set JAVA_OPTS
     status_set('maintenance','configuring JAVA_OPTS')
@@ -50,7 +51,7 @@ def configure_tomcat():
     # Generate keystore
     # TODO: Look for python library instead of dropping to shell
     status_set('maintenance','generating keystore')
-    subprocess.check_call('keytool -genkey -alias tomcat8 -keyalg RSA -storepass {} -keypass {} -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, S=Unknown, C=Unknown"'.format(config['tomcat-passwd'],config['tomcat-passwd'], shell=True)
+    subprocess.check_call('keytool -genkey -alias tomcat8 -keyalg RSA -storepass {} -keypass {} -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, S=Unknown, C=Unknown"'.format(config['tomcat-passwd'],config['tomcat-passwd']), shell=True)
     shutil.move('/root/.keystore','/var/lib/tomcat8/conf')
     chownr('/var/lib/tomcat8/conf/.keystore',owner='root',group='tomcat8')
     os.chmod('/var/lib/tomcat8/conf/.keystore',0o640)
