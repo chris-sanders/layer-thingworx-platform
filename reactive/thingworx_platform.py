@@ -28,6 +28,7 @@ def install_tomcat():
 def configure_tomcat():
     config = hookenv.config()
     status_set('maintenance','adding tomcat user')
+
     # Add tomcat user
     if config['install-admin']:
         for line in fileinput.input('/var/lib/tomcat8/conf/tomcat-users.xml',inplace=True):
@@ -47,14 +48,13 @@ def configure_tomcat():
     status_set('maintenance','configuring JAVA_OPTS')
     for line in fileinput.input('/etc/default/tomcat8',inplace=True):
             # Replace JAVA_OPTS with the recommend options
-            # TODO: -Dfile.encoding=UTF-8 was removed due to errors on boot, it needs to be fixed and re-added
             if line.startswith('JAVA_OPTS="-Djava'):
-                line = 'JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dserver -Dd64 -XX:+UseNUMA -XX:+UseConcMarkSweepGC"\n' 
+                line = 'JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dserver -Dd64 -XX:+UseNUMA -XX:+UseConcMarkSweepGC -Dfile.encoding=UTF-8"\n' 
             if line.startswith('#AUTHBIND'):
                 line = 'AUTHBIND=yes\n'
             print(line,end='')
-    # Generate keystore
-    # Remove any existing keystore
+
+    # Generate or update keystore
     try:
         os.remove("/var/lib/tomcat8/conf/.keystore")
     except FileNotFoundError as e:
@@ -63,7 +63,6 @@ def configure_tomcat():
         os.remove("/root/.keystore")
     except FileNotFoundError as e:
         pass
-    # TODO: Look for python library instead of dropping to shell
     status_set('maintenance','generating keystore')
     subprocess.check_call('keytool -genkey -alias tomcat8 -keyalg RSA -storepass {} -keypass {} -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, S=Unknown, C=Unknown"'.format(config['tomcat-passwd'],config['tomcat-passwd']), shell=True)
     shutil.move('/root/.keystore','/var/lib/tomcat8/conf')
@@ -76,16 +75,13 @@ def configure_tomcat():
         lines = inFile.readlines()
     for index, line in enumerate(lines):
         if '<Manager pathname="" />' in line:
-            del lines[index-1]
-            del lines[index+1]
+            if '<!--' in lines[index-1]:
+                del lines[index-1]
+            if '-->' in lines[index+1]:
+                del lines[index+1]
     with open('/var/lib/tomcat8/conf/context.xml','w') as outFile:
         outFile.write(''.join(lines))
     shutil.chown('/var/lib/tomcat8/conf/context.xml',user='tomcat8',group='tomcat8')
-    #for line in fileinput.input('/var/lib/tomcat8/conf/context.xml',inplace=True):
-    #    #TODO: Look at the default version of this file to see how to uncomment it
-    #    if line.startswith('<Manager pathname="" />'):
-    #        pass
-    #    print(line,end='')
 
     # Modify shutdown string and setup connectors
     removeSection = False
@@ -128,7 +124,6 @@ def install_thingworx_platform():
     except OSError as e:
         if e.errno is 17:
           pass
-    # TODO: Set user via relation or make independent of tomcat user
     shutil.chown(STORAGEDIR,user='tomcat8',group='tomcat8')
     shutil.chown(BACKUPDIR,user='tomcat8',group='tomcat8')
     os.chmod(STORAGEDIR,0o775)
