@@ -3,6 +3,7 @@ from charmhelpers.core import hookenv
 from charmhelpers.core.hookenv import status_set, resource_get, log
 from charmhelpers.fetch import apt_install
 from charmhelpers.core.host import service_start, service_restart, chownr
+#from os import FileNotFoundError
 
 import shutil
 import os
@@ -49,6 +50,15 @@ def configure_tomcat():
                 line = 'JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dserver -Dd64 -XX:+UseNUMA -XX:+UseConcMarkSweepGC"\n' 
             print(line,end='')
     # Generate keystore
+    # Remove any existing keystore
+    try:
+        os.remove("/var/lib/tomcat8/conf/.keystore")
+    except FileNotFoundError as e:
+        pass
+    try:
+        os.remove("/root/.keystore")
+    except FileNotFoundError as e:
+        pass
     # TODO: Look for python library instead of dropping to shell
     status_set('maintenance','generating keystore')
     subprocess.check_call('keytool -genkey -alias tomcat8 -keyalg RSA -storepass {} -keypass {} -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, S=Unknown, C=Unknown"'.format(config['tomcat-passwd'],config['tomcat-passwd']), shell=True)
@@ -66,7 +76,9 @@ def configure_tomcat():
         if line.startswith('<Server port="8005" shutdown='):
             line = '<Server port="8005" shutdown="TH!nGW0rX">\n'
         print(line,end='')
-    status_set('maintenance','')
+    status_set('maintenance','restarting tomcat')
+    service_restart('tomcat8')
+    set_state('tomcat.configured')
 
 @when_not('thingworx-platform.installed')
 @when('tomcat.configured')
