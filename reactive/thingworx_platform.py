@@ -41,6 +41,8 @@ def configure_tomcat():
                 else:
                     print('<user username="{}" password="{}" roles="manager"/>\n'.format(config['tomcat-user'],config['tomcat-passwd']),end='')
             print(line,end='')
+    shutil.chown('/var/lib/tomcat8/conf/tomcat-users.xml',user='tomcat8',group='tomcat8')
+
     # Set JAVA_OPTS
     status_set('maintenance','configuring JAVA_OPTS')
     for line in fileinput.input('/etc/default/tomcat8',inplace=True):
@@ -65,17 +67,21 @@ def configure_tomcat():
     shutil.move('/root/.keystore','/var/lib/tomcat8/conf')
     chownr('/var/lib/tomcat8/conf/.keystore',owner='root',group='tomcat8')
     os.chmod('/var/lib/tomcat8/conf/.keystore',0o640)
+    
     # Uncomment Manager element to prevent sessions from persisting across restarts
     for line in fileinput.input('/var/lib/tomcat8/conf/context.xml',inplace=True):
         #TODO: Look at the default version of this file to see how to uncomment it
         if line.startswith('<Manager pathname="" />'):
             pass
         print(line,end='')
+    shutil.chown('/var/lib/tomcat8/conf/context.xml',user='tomcat8',group='tomcat8')
+
     # Modify shutdown string
     for line in fileinput.input('/var/lib/tomcat8/conf/server.xml',inplace=True):
         if line.startswith('<Server port="8005" shutdown='):
             line = '<Server port="8005" shutdown="TH!nGW0rX">\n'
         print(line,end='')
+    shutil.chown('/var/lib/tomcat8/conf/server.xml',user='tomcat8',group='tomcat8')
     status_set('maintenance','restarting tomcat')
     service_restart('tomcat8')
     set_state('tomcat.configured')
@@ -84,6 +90,7 @@ def configure_tomcat():
 @when('tomcat.configured')
 def install_thingworx_platform():
     status_set('maintenance','Setting up Thingworx.war')
+
     # Create Thingworx directories
     STORAGEDIR = "/ThingworxStorage"
     BACKUPDIR = "/ThingworxBackupStorage"
@@ -104,14 +111,10 @@ def install_thingworx_platform():
 
     if platform_file:
       zip = zipfile.ZipFile(platform_file)
-      #TODO: make independent of tomcat version
       for entry in zip.namelist():
         if 'Thingworx.war' in entry:
           rootFolder = entry.split('/')[0]
-          #zip.extract(entry,'../resources/')
           log("War file found in " + rootFolder,'INFO')
-        #else:
-        #  log('skipping '+entry,'INFO') 
       zip.extractall('../resources/')
       shutil.move('../resources/'+rootFolder+'/Thingworx.war','/var/lib/tomcat8/webapps/')
       shutil.chown('/var/lib/tomcat8/webapps/Thingworx.war',user='tomcat8',group='tomcat8')
