@@ -10,7 +10,19 @@ options:
   install-admin:
     type: boolean
     default: True
-    description: "Include the tomcat8-admin package for administration"
+    description: "Include the tomcat8-admin package for /manager access"
+  https-only:
+    type: boolean
+    default: True
+    description: "Only allow https access"
+  https-port:
+    type: int
+    default: 443
+    description: "Port for https access"
+  http-port:
+    type: int
+    default: 80
+    description: "Port for http access"
 #  boolean-option:
 #    type: boolean
 #    default: False

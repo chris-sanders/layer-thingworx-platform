@@ -66,7 +66,6 @@ def configure_tomcat():
     status_set('maintenance','generating keystore')
     subprocess.check_call('keytool -genkey -alias tomcat8 -keyalg RSA -storepass {} -keypass {} -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, S=Unknown, C=Unknown"'.format(config['tomcat-passwd'],config['tomcat-passwd']), shell=True)
     shutil.move('/root/.keystore','/var/lib/tomcat8/conf')
-    #chownr('/var/lib/tomcat8/conf/.keystore',owner='root',group='tomcat8')
     shutil.chown('/var/lib/tomcat8/conf/.keystore',user='root',group='tomcat8')
     os.chmod('/var/lib/tomcat8/conf/.keystore',0o640)
     
@@ -89,25 +88,46 @@ def configure_tomcat():
         if removeSection:
             if '/>' in line:
                 removeSection = False
+            log('1: Removing server.xml: {}'.format(line),'INFO')
             continue
-        if line.strip().startswith('<Connector'):
+        if line.strip().startswith('<Connector port="{}"'.format(config['https-port'])):
             if '/>' not in line:
                 removeSection = True
+            log('2: Removing server.xml: {}'.format(line),'INFO')
+            continue
+        if line.strip().startswith('<Connector port="{}"'.format(config['http-port'])):
+            if '/>' not in line:
+                removeSection = True
+            log('3: Removing server.xml: {}'.format(line),'INFO')
+            continue
+        if line.strip().startswith('<Connector port="8080"'):
+            if '/>' not in line:
+                removeSection = True
+            log('4: Removing server.xml: {}'.format(line),'INFO')
             continue
         if line.strip().startswith('<Server port="8005" shutdown='):
             line = '<Server port="8005" shutdown="TH!nGW0rX">\n'
         if line.strip().startswith('<Service'):
             print(line,end='')
+            if not config['https-only']:
+                print('''\
+    <Connector port="{port}" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               URIEncoding="UTF-8"
+               redirectPort="{redirect}" />\n'''.format(port=config['http-port'],redirect=config['https-port']),end='')
             line = '''\
-    <Connector port="443"
+    <Connector port="{port}"
                protocol="org.apache.coyote.http11.Http11NioProtocol"
                maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
                keystoreFile="/var/lib/tomcat8/conf/.keystore"
-               keystorePass="{passwd}" clientAuth="false" sslProtocol="TLS" />'''.format(passwd=config['tomcat-passwd'])
+               keystorePass="{passwd}" clientAuth="false" sslProtocol="TLS" />\n'''.format(port=config['https-port'],passwd=config['tomcat-passwd'])
         print(line,end='')
     shutil.chown('/var/lib/tomcat8/conf/server.xml',user='tomcat8',group='tomcat8')
     status_set('maintenance','restarting tomcat')
     service_restart('tomcat8')
+    hookenv.open_port(config['https-port'],'TCP')
+    if not config['https-only']:
+        hookenv.open_port(config['http-port'],'TCP')
     set_state('tomcat.configured')
 
 @when_not('thingworx-platform.installed')
