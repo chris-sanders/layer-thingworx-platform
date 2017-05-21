@@ -50,7 +50,7 @@ def configure_tomcat():
             # TODO: -Dfile.encoding=UTF-8 was removed due to errors on boot, it needs to be fixed and re-added
             if line.startswith('JAVA_OPTS="-Djava'):
                 line = 'JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dserver -Dd64 -XX:+UseNUMA -XX:+UseConcMarkSweepGC"\n' 
-            if line.startswith('AUTHBIND'):
+            if line.startswith('#AUTHBIND'):
                 line = 'AUTHBIND=yes\n'
             print(line,end='')
     # Generate keystore
