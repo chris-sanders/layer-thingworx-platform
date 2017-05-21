@@ -165,6 +165,7 @@ def install_thingworx_platform():
     else:
       log("Add foundation-server resource, see juju attach",'ERROR')
       status_set('blocked',"Waiting for thingworkx-platform resource")
-      raise ValueError('Resources missing, see juju attach')
+      return
+      #raise ValueError('Resources missing, see juju attach')
     status_set('active',"thingworx-platform running")
     set_state('thingworx-platform.installed')
