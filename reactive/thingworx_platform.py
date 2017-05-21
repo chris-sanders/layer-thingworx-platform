@@ -41,7 +41,7 @@ def configure_tomcat():
                 else:
                     print('<user username="{}" password="{}" roles="manager"/>\n'.format(config['tomcat-user'],config['tomcat-passwd']),end='')
             print(line,end='')
-    shutil.chown('/var/lib/tomcat8/conf/tomcat-users.xml',user='tomcat8',group='tomcat8')
+        shutil.chown('/var/lib/tomcat8/conf/tomcat-users.xml',user='tomcat8',group='tomcat8')
 
     # Set JAVA_OPTS
     status_set('maintenance','configuring JAVA_OPTS')
@@ -50,6 +50,8 @@ def configure_tomcat():
             # TODO: -Dfile.encoding=UTF-8 was removed due to errors on boot, it needs to be fixed and re-added
             if line.startswith('JAVA_OPTS="-Djava'):
                 line = 'JAVA_OPTS="-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true -Dserver -Dd64 -XX:+UseNUMA -XX:+UseConcMarkSweepGC"\n' 
+            if line.startswith('AUTHBIND'):
+                line = 'AUTHBIND=yes\n'
             print(line,end='')
     # Generate keystore
     # Remove any existing keystore
@@ -65,21 +67,47 @@ def configure_tomcat():
     status_set('maintenance','generating keystore')
     subprocess.check_call('keytool -genkey -alias tomcat8 -keyalg RSA -storepass {} -keypass {} -dname "CN=Unknown, OU=Unknown, O=Unknown, L=Unknown, S=Unknown, C=Unknown"'.format(config['tomcat-passwd'],config['tomcat-passwd']), shell=True)
     shutil.move('/root/.keystore','/var/lib/tomcat8/conf')
-    chownr('/var/lib/tomcat8/conf/.keystore',owner='root',group='tomcat8')
+    #chownr('/var/lib/tomcat8/conf/.keystore',owner='root',group='tomcat8')
+    shutil.chown('/var/lib/tomcat8/conf/.keystore',user='root',group='tomcat8')
     os.chmod('/var/lib/tomcat8/conf/.keystore',0o640)
     
     # Uncomment Manager element to prevent sessions from persisting across restarts
-    for line in fileinput.input('/var/lib/tomcat8/conf/context.xml',inplace=True):
-        #TODO: Look at the default version of this file to see how to uncomment it
-        if line.startswith('<Manager pathname="" />'):
-            pass
-        print(line,end='')
+    with open('/var/lib/tomcat8/conf/context.xml','r') as inFile:
+        lines = inFile.readlines()
+    for index, line in enumerate(lines):
+        if '<Manager pathname="" />' in line:
+            del lines[index-1]
+            del lines[index+1]
+    with open('/var/lib/tomcat8/conf/context.xml','w') as outFile:
+        outFile.write(''.join(lines))
     shutil.chown('/var/lib/tomcat8/conf/context.xml',user='tomcat8',group='tomcat8')
+    #for line in fileinput.input('/var/lib/tomcat8/conf/context.xml',inplace=True):
+    #    #TODO: Look at the default version of this file to see how to uncomment it
+    #    if line.startswith('<Manager pathname="" />'):
+    #        pass
+    #    print(line,end='')
 
-    # Modify shutdown string
+    # Modify shutdown string and setup connectors
+    removeSection = False
     for line in fileinput.input('/var/lib/tomcat8/conf/server.xml',inplace=True):
-        if line.startswith('<Server port="8005" shutdown='):
+        if removeSection:
+            if '/>' in line:
+                removeSection = False
+            continue
+        if line.strip().startswith('<Connector'):
+            if '/>' not in line:
+                removeSection = True
+            continue
+        if line.strip().startswith('<Server port="8005" shutdown='):
             line = '<Server port="8005" shutdown="TH!nGW0rX">\n'
+        if line.strip().startswith('<Service'):
+            print(line,end='')
+            line = '''\
+    <Connector port="443"
+               protocol="org.apache.coyote.http11.Http11NioProtocol"
+               maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+               keystoreFile="/var/lib/tomcat8/conf/.keystore"
+               keystorePass="{passwd}" clientAuth="false" sslProtocol="TLS" />'''.format(passwd=config['tomcat-passwd'])
         print(line,end='')
     shutil.chown('/var/lib/tomcat8/conf/server.xml',user='tomcat8',group='tomcat8')
     status_set('maintenance','restarting tomcat')
