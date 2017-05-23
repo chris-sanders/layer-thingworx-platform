@@ -3,63 +3,60 @@
 Describe the intended usage of this charm and anything unique about how this
 charm relates to others here.
 
-This README will be displayed in the Charm Store, it should be either Markdown
-or RST. Ideal READMEs include instructions on how to use the charm, expected
-usage, and charm features that your audience might be interested in. For an
-example of a well written README check out Hadoop:
-http://jujucharms.com/charms/precise/hadoop
+This charm provides [Thingworx Foundation Server][foundation-server]. The scope of this product is beyond what can be reasonably described here. To learn about Thingworx by PTC you should see their [Developer Portal][portal]. If you are already familiar and just want to try the Foundation Server you will need to get a copy of the trial edition. If you haven't alrady [register][register] for a developer account. After registring download the [Trial Edition][trial] and you're ready to go.
 
-Use this as a Markdown reference if you need help with the formatting of this
-README: http://askubuntu.com/editing-help
+# Deploy
+To deploy:
 
-This charm provides [service][]. Add a description here of what the service
-itself actually does.
+    juju deploy cs:~chris.sanders/thingworx-foundation-server
 
-Also remember to check the [icon guidelines][] so that your charm looks good
-in the Juju GUI.
+Check the status of the deploy with:
 
-# Usage
+    juju status
 
-Step by step instructions on using the charm:
+Note the IP Address for the machine in use. By default this will get you up and running with both port 80 and port 443 available to access the tomcat instance. This is intended to let you develop locally not secured for remote or cloud deployments. See the Configuraiton options below if you want to restrict access to https traffic only.
 
-juju deploy servicename
+After deployment completes, the tomcat server will load the Thingworx application which can take a minute on the first boot. Once it is ready you can access it at http://ip-address/Thingwox using the Username and Password. The admin username and password are provided in the Thingworx [Installation guide][install-guide] and at the time of this writting are
 
-and so on. If you're providing a web service or something that the end user
-needs to go to, tell them here, especially if you're deploying a service that
-might listen to a non-default port.
+Username: Administrator
 
-You can then browse to http://ip-address to configure the service.
+Password: admin
+
+If you can not access the Foundation server you can check the status to see if it is running by accessing http://ip-address/manager/html, the default password for tomcat is "tomcat8" for both the user and password.
 
 ## Scale out Usage
 
-If the charm has any recommendations for running at scale, outline them in
-examples here. For example if you have a memcached relation that improves
-performance, mention it here.
+This charm does not adderss multi-server configurations at this time.  However, you can add units to stand up multiple servers if you would like to test migrations or simply want multiple indipendent test servers.
 
 ## Known Limitations and Issues
 
-This not only helps users but gives people a place to start if they want to help
-you add features to your charm.
+This is a first pass at this charm, there are improvements that I would like to make but it is valuable already. Configuration parameters do not alter an already installed server. For example, chaning the HTTP port or setting the charm to HTTPS only will not have any affect on an already deployed server. This is easily addressed, and it's on my to-do list when I have time.
+
+Note this charm is not installing ntp as recommended. When running on a local LXD this is not necessary and ntp can be easily added if your install is on meta intead of a container. If you want to add ntp in your bundle on even after deploy you can run:
+
+  juju deploy ntp
+  juju add-relation thingworx-foundation-server:ntp
 
 # Configuration
 
-The configuration options will be listed on the charm store, however If you're
-making assumptions or opinionated decisions in the charm (like setting a default
-administrator password), you should detail that here so the user knows how to
-change it immediately, etc.
+Configuration options are fairly self explanatory at this time. If you are installing in an insecure environment you should consider setting the follwoing.
+
+  - install-admin=False
+  - https-only=True
+
+This will not install the tomcat admin package and not configure tomcat to use port 80 so all traffic is HTTPS.
 
 # Contact Information
 
-Though this will be listed in the charm store itself don't assume a user will
-know that, so include that information here:
-
 ## Upstream Project Name
 
-  - Upstream website
-  - Upstream bug tracker
-  - Upstream mailing list or contact information
-  - Feel free to add things if it's useful for users
+  - https://github.com/chris-sanders/layer-thingworx-platform
+  - https://github.com/chris-sanders/layer-thingworx-platform/issues
+  - email: sanders.chris@gmail.com
 
 
-[service]: http://example.com
+[foundation-server]: https://developer.thingworx.com/resources/trial-editions
+[portal]: https://developer.thingworx.com/
+[register]: https://developer.thingworx.com/signup
+[trial]: https://developer.thingworx.com/resources/trial-editions
 [icon guidelines]: https://jujucharms.com/docs/stable/authors-charm-icon
