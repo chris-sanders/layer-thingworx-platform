@@ -8,7 +8,7 @@ This charm provides [Thingworx Foundation Server][foundation-server]. The scope 
 # Deploy
 To deploy:
 
-    juju deploy cs:~chris.sanders/thingworx-foundation-server
+    juju deploy cs:~chris.sanders/thingworx-foundation-server --resource foundation-server=./path/to/Thingworks.zip
 
 Check the status of the deploy with:
 
