@@ -1,8 +1,5 @@
 # Overview
 
-Describe the intended usage of this charm and anything unique about how this
-charm relates to others here.
-
 This charm provides [Thingworx Foundation Server][foundation-server]. The scope of this product is beyond what can be reasonably described here. To learn about Thingworx by PTC you should see their [Developer Portal][portal]. If you are already familiar and just want to try the Foundation Server you will need to get a copy of the trial edition. If you haven't alrady [register][register] for a developer account. After registring download the [Trial Edition][trial] and you're ready to go.
 
 # Deploy
