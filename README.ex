@@ -14,7 +14,7 @@ Check the status of the deploy with:
 
     juju status
 
-Note the IP Address for the machine in use. By default this will get you up and running with both port 80 and port 443 available to access the tomcat instance. This is intended to let you develop locally not secured for remote or cloud deployments. See the Configuraiton options below if you want to restrict access to https traffic only.
+Note the IP Address for the machine in use. By default this will get you up and running with HTTPS access on port 443 available to access the tomcat instance. For easier access you can enable HTTP access on port 80 with a configuration option, see all of the configuration options at the bottom of this page.
 
 After deployment completes, the tomcat server will load the Thingworx application which can take a minute on the first boot. Once it is ready you can access it at http://ip-address/Thingwox using the Username and Password. The admin username and password are provided in the Thingworx [Installation guide][install-guide] and at the time of this writting are
 
@@ -32,10 +32,10 @@ This charm does not adderss multi-server configurations at this time.  However, 
 
 This is a first pass at this charm, there are improvements that I would like to make but it is valuable already. Configuration parameters do not alter an already installed server. For example, chaning the HTTP port or setting the charm to HTTPS only will not have any affect on an already deployed server. This is easily addressed, and it's on my to-do list when I have time.
 
-Note this charm is not installing ntp as recommended. When running on a local LXD this is not necessary and ntp can be easily added if your install is on meta intead of a container. If you want to add ntp in your bundle on even after deploy you can run:
+Note this charm is not installing ntp as recommended. When running on a local LXD this is not necessary and ntp can be easily added if your install in an environment that needs ntp. If you want to add ntp in your bundle on even after deploy you can run:
 
-  juju deploy ntp
-  juju add-relation thingworx-foundation-server:ntp
+    juju deploy ntp
+    juju add-relation thingworx-foundation-server ntp
 
 # Configuration
 
