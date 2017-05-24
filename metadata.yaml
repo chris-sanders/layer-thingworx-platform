@@ -1,8 +1,8 @@
 name: thingworx-foundation-server
-summary: Install Thingworx developer platform
+summary: Install Thingworx Foundation Server
 maintainer: Chris Sanders <sanders.chris@gmail.com>
 description: |
-  Install Thingworx developer platform on Ubuntu
+  Install Thingworx Foundation Server on Ubuntu 
 tags:
   # Replace "misc" with one or more whitelisted tags from this list:
   # https://jujucharms.com/docs/stable/authors-charm-metadata
@@ -10,12 +10,11 @@ tags:
 #subordinate: true
 series:
   - xenial
-#  - trusty
 resources:
   foundation-server:
     type: file
     filename: thingworx-platform.zip
-    description: "Developer platoform zip file"
+    description: "Foundation Server zip file"
 #provides:
 #  provides-services:
 #    interface: interface-name
