@@ -156,7 +156,6 @@ def install_thingworx_platform():
       rootFolder = None
       zip = zipfile.ZipFile(platform_file)
       for entry in zip.namelist():
-        log('Entry: {}'.format(entry), 'DEBUG')
         if 'Thingworx.war' in entry:
           rootFolder = entry.split('/')[0]
           log("War file found in " + rootFolder,'INFO')
@@ -170,8 +169,8 @@ def install_thingworx_platform():
             zip = zipfile.ZipFile('../resources/'+file)
             for entry in zip.namelist():
               if 'Thingworx.war' in entry:
-                log("War file found in " + entry, 'INFO')
-                zip.extractall('../resource/')
+                log("War file found in " + file, 'INFO')
+                zip.extractall('../resources/')
                 shutil.move('../resources/Thingworx.war','/var/lib/tomcat8/webapps/')
       shutil.chown('/var/lib/tomcat8/webapps/Thingworx.war',user='tomcat8',group='tomcat8')
       os.chmod('/var/lib/tomcat8/webapps/Thingworx.war',0o775)
